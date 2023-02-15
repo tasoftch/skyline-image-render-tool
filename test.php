@@ -32,82 +32,11 @@
  *
  */
 
-namespace Skyline\ImageTool\Render;
+use Skyline\ImageTool\Render\WatermarkRender;
 
+require "vendor/autoload.php";
 
-use Skyline\ImageTool\Render\Exception\UnsupportedImageTypeException;
+$wr = new WatermarkRender();
 
-class LocalImage implements ImageInterface
-{
-	/** @var string */
-	protected $filename;
-	/** @var int */
-	protected $type;
-	/** @var int */
-	protected $width;
-	/** @var int */
-	protected $height;
-
-	/**
-	 * LocalImage constructor.
-	 * @param string $filename
-	 */
-	public function __construct(string $filename)
-	{
-		$this->filename = $filename;
-		$info = getimagesize($filename);
-		$this->width = $info[0];
-		$this->height = $info[1];
-
-		switch ($info["mime"]) {
-			case "image/jpeg":
-			case "image/jpg":
-				$this->type = self::IMAGE_JPEG;
-				break;
-			case "image/gif":
-				$this->type = self::IMAGE_GIF;
-				break;
-			case "image/png":
-				$this->type = self::IMAGE_PNG;
-				break;
-			case "image/bmp":
-			case "image/tiff":
-				$this->type = self::IMAGE_BMP;
-				break;
-			default:
-				throw (new UnsupportedImageTypeException("Unsupported image type {$info["name"]}", 401))->setType($info["name"]);
-		}
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getFilename(): string
-	{
-		return $this->filename;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getType(): int
-	{
-		return $this->type;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getWidth(): int
-	{
-		return $this->width;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getHeight(): int
-	{
-		return $this->height;
-	}
-}
+$img = $wr->createWatermark("COPYRIGHT", 'Arial.ttf', 38.0, 45, 0x40ff0000);
+$img->save("here.png");

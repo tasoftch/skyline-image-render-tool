@@ -10,7 +10,10 @@
   "autoload": {
     "psr-4": {
       "Skyline\\ImageTool\\Render\\" : "src"
-    }
+    },
+    "files": [
+      "Tests/bootstrap.php"
+    ]
   },
   "require" : {
     "php": ">=7.2",
@@ -18,6 +21,6 @@
 	"ext-gd": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "^6"
+    "phpunit/phpunit": "^9"
   }
 }

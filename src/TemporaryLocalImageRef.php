@@ -34,80 +34,33 @@
 
 namespace Skyline\ImageTool\Render;
 
-
-use Skyline\ImageTool\Render\Exception\UnsupportedImageTypeException;
-
-class LocalImage implements ImageInterface
+class TemporaryLocalImageRef extends LocalImageRef
 {
-	/** @var string */
-	protected $filename;
-	/** @var int */
-	protected $type;
-	/** @var int */
-	protected $width;
-	/** @var int */
-	protected $height;
-
-	/**
-	 * LocalImage constructor.
-	 * @param string $filename
-	 */
-	public function __construct(string $filename)
+	public function __construct(int $width, int $height, bool $useAlpha = true)
 	{
-		$this->filename = $filename;
-		$info = getimagesize($filename);
-		$this->width = $info[0];
-		$this->height = $info[1];
+		$img = imagecreatetruecolor($width, $height);
+		$this->width = $width;
+		$this->height = $height;
 
-		switch ($info["mime"]) {
-			case "image/jpeg":
-			case "image/jpg":
-				$this->type = self::IMAGE_JPEG;
-				break;
-			case "image/gif":
-				$this->type = self::IMAGE_GIF;
-				break;
-			case "image/png":
-				$this->type = self::IMAGE_PNG;
-				break;
-			case "image/bmp":
-			case "image/tiff":
-				$this->type = self::IMAGE_BMP;
-				break;
-			default:
-				throw (new UnsupportedImageTypeException("Unsupported image type {$info["name"]}", 401))->setType($info["name"]);
+		if($useAlpha) {
+			imagecolortransparent($img, imagecolorallocatealpha($img, 0, 0, 0, 1));
+
+			$this->_io[0] = "imagecreatefrompng";
+			$this->_io[1] = "imagepng";
+			$this->type = self::IMAGE_PNG;
+		} else {
+			$this->_io[0] = "imagecreatefromjpeg";
+			$this->_io[1] = "imagejpeg";
+			$this->type = self::IMAGE_JPEG;
 		}
+
+		$this->_io[2] = $img;
+		$this->filename = tempnam(".", "timg_");
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getFilename(): string
+	public function __destruct()
 	{
-		return $this->filename;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getType(): int
-	{
-		return $this->type;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getWidth(): int
-	{
-		return $this->width;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getHeight(): int
-	{
-		return $this->height;
+		unlink($this->getFilename());
+		parent::__destruct();
 	}
 }

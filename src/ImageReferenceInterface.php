@@ -73,4 +73,6 @@ interface ImageReferenceInterface extends ImageInterface
 	 * @return bool
 	 */
 	public function replaceImageResource($src): bool;
+
+	public function save($newFile, $compression = -1):bool;
 }

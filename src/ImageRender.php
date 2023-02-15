@@ -226,7 +226,6 @@ class ImageRender implements ImageRenderInterface
 	public function getSizeOfText(string $text, string $font, $fontSize = 12.0, $angle = 0, int &$width = NULL, int &$height = NULL)
 	{
 		$box = imagettfbbox($fontSize, $angle, $font, $text);
-
 		if($box) {
 			$min_x = min( array($box[0], $box[2], $box[4], $box[6]) );
 			$max_x = max( array($box[0], $box[2], $box[4], $box[6]) );
@@ -246,8 +245,7 @@ class ImageRender implements ImageRenderInterface
 	{
 		$img = imagecreatetruecolor($width, $height);
 		if($usesAlpha) {
-			imagealphablending($img, false);
-			imagesavealpha($img, true);
+			imagecolortransparent($img, imagecolorallocatealpha($img, 0, 0, 0, 127));
 		}
 		return $img;
 	}

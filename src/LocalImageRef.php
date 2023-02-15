@@ -37,9 +37,7 @@ namespace Skyline\ImageTool\Render;
 
 class LocalImageRef extends LocalImage implements ImageReferenceInterface
 {
-
-
-	private $_io;
+	protected $_io;
 
 	public function __construct(string $filename)
 	{
@@ -80,7 +78,7 @@ class LocalImageRef extends LocalImage implements ImageReferenceInterface
 	 */
 	public function getImageResource()
 	{
-		if(!$this->_io[2])
+		if(!isset($this->_io[2]))
 			$this->_io[2] = ($this->_io[0])($this->getFilename());
 		return $this->_io[2];
 	}
@@ -137,17 +135,18 @@ class LocalImageRef extends LocalImage implements ImageReferenceInterface
 	{
 		if($this->_io[2])
 			imagedestroy($this->_io[2]);
-		if(is_resource($src)) {
+		if($src) {
 			$this->_io[2] = $src;
 			$this->width = imagesx($src);
 			$this->height = imagesy($src);
-		}
+		} else
+			$this->_io[2] = NULL;
 		return true;
 	}
 
 	public function __destruct()
 	{
-		if($this->_io[2])
+		if($this->_io[2] ?? NULL)
 			imagedestroy($this->_io[2]);
 	}
 }

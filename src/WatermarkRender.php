@@ -34,80 +34,23 @@
 
 namespace Skyline\ImageTool\Render;
 
-
-use Skyline\ImageTool\Render\Exception\UnsupportedImageTypeException;
-
-class LocalImage implements ImageInterface
+class WatermarkRender extends ImageRender
 {
-	/** @var string */
-	protected $filename;
-	/** @var int */
-	protected $type;
-	/** @var int */
-	protected $width;
-	/** @var int */
-	protected $height;
+	public function createWatermark(string $text, string $font, float $size = 12, float $angle = 0, $color = 0, int $margin = 4): ?ImageReferenceInterface {
+		$this->getSizeOfText($text, $font, $size, $angle, $w, $h);
+		$this->getSizeOfText($text, $font, $size, 0, $w0, $h0);
 
-	/**
-	 * LocalImage constructor.
-	 * @param string $filename
-	 */
-	public function __construct(string $filename)
-	{
-		$this->filename = $filename;
-		$info = getimagesize($filename);
-		$this->width = $info[0];
-		$this->height = $info[1];
+		$temp = new TemporaryLocalImageRef($w+$margin, $h+$margin, true);
 
-		switch ($info["mime"]) {
-			case "image/jpeg":
-			case "image/jpg":
-				$this->type = self::IMAGE_JPEG;
-				break;
-			case "image/gif":
-				$this->type = self::IMAGE_GIF;
-				break;
-			case "image/png":
-				$this->type = self::IMAGE_PNG;
-				break;
-			case "image/bmp":
-			case "image/tiff":
-				$this->type = self::IMAGE_BMP;
-				break;
-			default:
-				throw (new UnsupportedImageTypeException("Unsupported image type {$info["name"]}", 401))->setType($info["name"]);
-		}
+		imagefill($temp->getImageResource(), 0, 0, imagecolorallocatealpha($temp->getImageResource(), 255, 255, 255, 127));
+
+		if(imagettftext($temp->getImageResource(), $size, $angle, (int) ($margin/2+sin($angle/360*2*M_PI)*$h0), $h+$margin/2, $color, $font, $text))
+			return $temp;
+		unset($temp);
+		return NULL;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getFilename(): string
-	{
-		return $this->filename;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getType(): int
-	{
-		return $this->type;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getWidth(): int
-	{
-		return $this->width;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getHeight(): int
-	{
-		return $this->height;
+	public function mergeWatermark(ImageReferenceInterface $image, ImageReferenceInterface $watermark, int $fraction) {
+		imagecopymerge($image->getImageResource(), $watermark->getImageResource(), 0, 0, 0, 0, $watermark->getWidth(), $watermark->getHeight(), $fraction);
 	}
 }
